@@ -1,3 +1,6 @@
 .env
 .gitignore
 venv
+**/__pycache__
+.git
+*.md
