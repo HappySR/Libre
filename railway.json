@@ -2,8 +2,6 @@
     "build": {
       "builder": "DOCKERFILE",
       "dockerfilePath": "Dockerfile",
-      "args": {
-        "LANGUAGES": "en,hi,es,fr,de,zh,ja,bn,ar"
-      }
+      "cache": true
     }
   }

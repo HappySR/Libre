@@ -1,6 +1,5 @@
-.env
-.gitignore
-venv
 **/__pycache__
 .git
+.env
 *.md
+Dockerfile-dev
