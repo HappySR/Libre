@@ -16,12 +16,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir libretranslate==1.6.4
 
-# Install only essential models during build (en, hi, es)
-RUN libretranslate --update-models && \
-    libretranslate --install-lang en && \
-    libretranslate --install-lang hi && \
-    libretranslate --install-lang es
-
 # Runtime configuration
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
