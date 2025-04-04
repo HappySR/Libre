@@ -1,7 +1,6 @@
 #!/bin/sh
 set -ex
 
-# Install all models if not already installed
 if [ ! -d "/root/.local/share/argos-translate/packages" ]; then
   libretranslate --update-models
   libretranslate --install-lang en || true
@@ -15,5 +14,4 @@ if [ ! -d "/root/.local/share/argos-translate/packages" ]; then
   libretranslate --install-lang ar || true
 fi
 
-# Start the LibreTranslate server
-exec libretranslate --host 0.0.0.0 --port $PORT
+exec libretranslate --host 0.0.0.0 --port ${PORT:-5000}
