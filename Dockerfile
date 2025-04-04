@@ -1,28 +1,26 @@
-# Base image with Python
-FROM python:3.10
+FROM python:3.10-slim-bullseye
 
-# Set working directory
-WORKDIR /app
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    gcc \
+    g++ \
+    libicu-dev \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements.txt into the container
-COPY requirements.txt ./
+# Install application dependencies
+RUN pip install --no-cache-dir \
+    libretranslate \
+    argostranslate
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Install Argos Translate
-RUN pip install argostranslate
-
-# Update the package index and install language models using argospm
+# Install language models
 RUN argospm update && \
     argospm install translate-en_es && \
     argospm install translate-es_en
 
-# Copy all files into the container
-COPY . .
-
-# Expose the port LibreTranslate runs on
+# Configure runtime
 EXPOSE 5000
-
-# Command to run the server
-CMD ["libretranslate"]
+ENV PORT=5000
+CMD ["libretranslate", "--host", "0.0.0.0", "--port", "5000", "--disable-web-ui"]

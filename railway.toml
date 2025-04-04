@@ -5,4 +5,7 @@ name = "libretranslate-railway"
 dockerfile = "Dockerfile"
 
 [deploy]
-start_cmd = "libretranslate"
+start_command = "libretranslate --host 0.0.0.0 --port $PORT --disable-web-ui"
+
+[environment.variables]
+PORT = "5000"
