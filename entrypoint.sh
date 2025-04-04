@@ -8,6 +8,4 @@ if [ ! -d "/root/.local/share/argos-translate/packages" ]; then
 fi
 
 # Start server with all languages
-exec libretranslate \
-  --host 0.0.0.0 \
-  --port $PORT
+exec libretranslate --host 0.0.0.0 --port $PORT
