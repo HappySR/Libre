@@ -1,39 +1,40 @@
 FROM python:3.10-slim-bullseye AS builder
 
-ARG LANGUAGES="en,hi"
+ARG LANGUAGES="en,es,fr"  # Essential languages only
 ENV LT_LOAD_ONLY=$LANGUAGES
 
-# System dependencies - expanded set
+# System dependencies
 RUN apt-get update && \
-    apt-get install -y \
+    apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     libicu-dev \
     pkg-config \
     libssl-dev \
-    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Virtual environment with upgraded pip
+# Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 
-# Install LibreTranslate with explicit dependencies
-RUN pip install --no-cache-dir \
+# Install pinned dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
     libretranslate==1.6.4 \
-    argostranslate==2.4.0 \
-    fastapi==0.103.2 \
-    uvloop==0.19.0
+    argostranslate==1.9.6 \
+    fastapi==0.95.2 \
+    uvloop==0.17.0
 
-# Install models
-RUN for lang in $(echo $LANGUAGES | tr ',' ' '); do \
-        libretranslate --install-lang $lang; \
+# Pre-install models during build
+RUN libretranslate --update_models && \
+    for lang in $(echo $LANGUAGES | tr ',' ' '); do \
+        libretranslate --install_lang $lang; \
     done
 
 # Final stage
 FROM python:3.10-slim-bullseye
 
+# Runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libicu-dev \
@@ -41,8 +42,10 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH" \
-    LT_LOAD_ONLY=$LANGUAGES
+COPY --from=builder /root/.local/share/argos-translate /root/.local/share/argos-translate
 
-EXPOSE ${PORT:-5000}
-ENTRYPOINT ["sh", "-c", "libretranslate --host 0.0.0.0 --port ${PORT:-5000} --load-only \"$LT_LOAD_ONLY\""]
+ENV PATH="/opt/venv/bin:$PATH" \
+    PORT=5000
+
+EXPOSE $PORT
+ENTRYPOINT ["libretranslate", "--host", "0.0.0.0", "--port", "$PORT"]
