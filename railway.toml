@@ -1,0 +1,8 @@
+[project]
+name = "libretranslate-railway"
+
+[build]
+dockerfile = "Dockerfile"
+
+[deploy]
+start_cmd = "libretranslate"
