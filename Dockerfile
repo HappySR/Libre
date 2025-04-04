@@ -1,9 +1,8 @@
 FROM python:3.10-slim-bullseye AS builder
 
-ARG LANGUAGES="en,es,fr"  # Essential languages only
+ARG LANGUAGES="en,hi"
 ENV LT_LOAD_ONLY=$LANGUAGES
 
-# System dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     gcc \
@@ -13,28 +12,22 @@ RUN apt-get update && \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install pinned dependencies
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir \
     libretranslate==1.6.4 \
-    argostranslate==1.9.6 \
-    fastapi==0.95.2 \
-    uvloop==0.17.0
+    argostranslate==1.9.6
 
-# Pre-install models during build
-RUN libretranslate --update_models && \
+# CORRECTED MODEL COMMANDS (hyphens instead of underscores)
+RUN libretranslate --update-models && \
     for lang in $(echo $LANGUAGES | tr ',' ' '); do \
-        libretranslate --install_lang $lang; \
+        libretranslate --install-lang $lang; \
     done
 
-# Final stage
 FROM python:3.10-slim-bullseye
 
-# Runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libicu-dev \
@@ -48,4 +41,4 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PORT=5000
 
 EXPOSE $PORT
-ENTRYPOINT ["libretranslate", "--host", "0.0.0.0", "--port", "$PORT"]
+ENTRYPOINT ["libretranslate", "--host", "0.0.0.0", "--port", "$PORT", "--load-only", "en,hi"]
