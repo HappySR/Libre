@@ -10,13 +10,13 @@ COPY requirements.txt ./
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Manually download the language models using argos-translate
-RUN mkdir -p /usr/share/argos-translate && \
-    cd /usr/share/argos-translate && \
-    curl -L -o en_es.argosmodel https://github.com/argosopentech/argos-translate/releases/download/v1.0/en_es.argosmodel && \
-    curl -L -o es_en.argosmodel https://github.com/argosopentech/argos-translate/releases/download/v1.0/es_en.argosmodel && \
-    argos-translate --install /usr/share/argos-translate/en_es.argosmodel && \
-    argos-translate --install /usr/share/argos-translate/es_en.argosmodel
+# Install Argos Translate
+RUN pip install argostranslate
+
+# Update the package index and install language models using argospm
+RUN argospm update && \
+    argospm install translate-en_es && \
+    argospm install translate-es_en
 
 # Copy all files into the container
 COPY . .
