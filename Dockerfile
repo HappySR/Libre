@@ -8,17 +8,25 @@ RUN apt-get update && \
     apt-get install -y \
     gcc \
     g++ \
-    libicu-dev && \
+    libicu-dev \
+    curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install and configure models
-RUN pip install --no-cache-dir libretranslate==1.6.4 && \
-    /opt/venv/bin/libretranslate --update-models && \
-    /opt/venv/bin/libretranslate --install-langs $LANGUAGES
+# Install LibreTranslate first
+RUN pip install --no-cache-dir libretranslate==1.6.4
+
+# Update models list
+RUN libretranslate --update-models
+
+# Install models one by one with individual RUN commands
+RUN IFS=',' read -ra LANG_ARRAY <<< "$LANGUAGES" && \
+    for lang in "${LANG_ARRAY[@]}"; do \
+        libretranslate --install-lang "$lang" || true; \
+    done
 
 # Runtime stage
 FROM python:3.10-slim-bullseye
